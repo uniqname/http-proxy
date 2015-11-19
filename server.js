@@ -11,7 +11,7 @@ function logger(prefix){
 			req.method,
 			req.headers.host,
 			req.url,
-			req.ip|| req._remoteAddress || req.connection && req.connection.remoteAddress
+			req.ip || req._remoteAddress || req.connection && req.connection.remoteAddress
 		)
 		next()
 	}
@@ -31,15 +31,27 @@ function proxyServer(){
 	var
 	  app = express(),
 	  p = proxy("localhost:8081", {
-		forwardPath: function(req, res){
-			return url.parse(req.url).path
-		},
 		decorateRequest: function(req){
 			req.headers["Host"] = "yoyodyne.net"
+		},
+		intercept: function(rsp, data, req, res, next){
+			if(rsp.statusCode >= 200 && rsp.statusCode < 400){
+				next(null, data)
+			}else{
+				next("Content not found")
+			}
 		}
 	  })
 	app.use(logger("PROX"))
 	app.use(p)
+	app.use(function(err, req, res, next){
+		if(req.url === "/fallback"){
+			res.statusCode = 200;
+			res.end("here's your fallback data!")
+			next()
+		}
+		next(err)
+	})
 	app.listen(8080)
 }
 
