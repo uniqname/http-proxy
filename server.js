@@ -7,7 +7,7 @@ var
 function logger(prefix){
 	return function(req, res, next){
 		console.log(
-			prefix, 
+			prefix,
 			req.method,
 			req.headers.host,
 			req.url,
@@ -30,7 +30,7 @@ function fileServer(){
 function proxyServer(){
 	var
 	  app = express(),
-	  p = proxy("localhost:8081", {
+	  p = proxy("localhost:8081/deep", {
 		decorateRequest: function(req){
 			req.headers["Host"] = "yoyodyne.net"
 		},
